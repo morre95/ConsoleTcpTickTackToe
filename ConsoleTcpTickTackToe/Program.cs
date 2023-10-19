@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 
 namespace ConsoleTcpTickTackToe
 {
@@ -10,19 +11,39 @@ namespace ConsoleTcpTickTackToe
     {
         private static IPEndPoint ipEndPoint = new(IPAddress.Parse("127.0.0.1"), 13);
 
-        public static async Task<int> RequestNextMove()
+        public static async Task<int> RequestNextMove(string msg)
         {
-            using TcpClient client = new();
+            using Socket client = new(
+                ipEndPoint.AddressFamily,
+                SocketType.Stream,
+                ProtocolType.Tcp);
             await client.ConnectAsync(ipEndPoint);
-            await using NetworkStream stream = client.GetStream();
 
-            var buffer = new byte[1_024];
-            int received = await stream.ReadAsync(buffer);
+            msg += "<|EOM|>";
 
-            var message = Encoding.UTF8.GetString(buffer, 0, received);
+            string response;
+            while (true)
+            {
+                var messageBytes = Encoding.UTF8.GetBytes(msg);
+                _ = await client.SendAsync(messageBytes, SocketFlags.None);
+                Debug.WriteLine($"Socket client sent message: \"{msg}\"");
 
-            Debug.WriteLine($"Message received: '{message}'");
-            return int.Parse(message);
+                // Receive ack.
+                var buffer = new byte[1_024];
+                var received = await client.ReceiveAsync(buffer, SocketFlags.None);
+                response = Encoding.UTF8.GetString(buffer, 0, received);
+                string ack = "<|ACK|>";
+                if (response.EndsWith(ack))
+                {
+                    Debug.WriteLine($"Socket client received acknowledgment: \"{response}\"");
+                    response = response.Replace(ack, "");
+                    break;
+                }
+            }
+
+            client.Shutdown(SocketShutdown.Both);
+            Debug.WriteLine($"Message received: '{response}'");
+            return int.Parse(response);
         }
     }
 
@@ -37,7 +58,21 @@ namespace ConsoleTcpTickTackToe
         {
             char[] arr = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
             list = new(arr);
+
             await Play();
+
+            while (true)
+            {
+                if (Confirm("Play again?"))
+                {
+                    list = new(arr);
+                    await Play();
+                }
+                else
+                {
+                    break;
+                }
+            } 
         }
 
         private static async Task Play()
@@ -49,9 +84,10 @@ namespace ConsoleTcpTickTackToe
                 if (player % 2 == 0)
                 {
                     bool isOk = false;
+                    string msg = JsonSerializer.Serialize(list);
                     do
                     {
-                        choice = await Client.RequestNextMove();
+                        choice = await Client.RequestNextMove(msg);
 
                         isOk = list[choice] != 'X' && list[choice] != 'O';
                     } while (!isOk);
@@ -121,6 +157,22 @@ namespace ConsoleTcpTickTackToe
                 Console.WriteLine("Draw");
             }
             Console.ReadLine();
+        }
+
+        private static bool Confirm(string title)
+        {
+            ConsoleKey response;
+            do
+            {
+                Console.Write($"{title} [y/n] ");
+                response = Console.ReadKey(false).Key;
+                if (response != ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                }
+            } while (response != ConsoleKey.Y && response != ConsoleKey.N);
+
+            return (response == ConsoleKey.Y);
         }
 
         private static void Board()
