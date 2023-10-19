@@ -65,10 +65,14 @@ namespace ConsoleTcpTickTackToe
                     {
                         Console.WriteLine($"Your opponent's previous move: {choice}");
                     }
+                    else
+                    {
+                        Console.WriteLine("Enter number between 1 and 9: ");
+                    }
 
                     do
                     {
-                        Console.Write("Enter number between 1 and 9: ");
+                        Console.Write("Your move: ");
 
                         isValid = int.TryParse(Console.ReadLine(), out number) && number > 0 && number < 10;
 
