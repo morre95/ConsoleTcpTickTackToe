@@ -97,9 +97,11 @@ namespace ConsoleTcpTickTackServer
             for (int i = 0; i < winPatterns.Length; i++)
             {
                 int[] pattern = winPatterns[i];
-                int a = pattern[0]; //3
+                int a = pattern[0]; //1
                 int b = pattern[1]; //5
-                int c = pattern[2]; //7
+                int c = pattern[2]; //9
+
+                // TODO: vid X1, X5 körde servern 6 i stället för 9. Och den hade 2, 8, 6 och 9 att välja på
 
                 if (list[a] == 'X' && list[b] == 'X' && list[c] != 'O')
                 {
