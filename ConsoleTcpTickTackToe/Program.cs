@@ -111,7 +111,6 @@ namespace ConsoleTcpTickTackToe
             {
                 Console.WriteLine("Draw");
             }
-            Console.ReadLine();
         }
 
         private static bool Confirm(string title)
@@ -150,28 +149,27 @@ namespace ConsoleTcpTickTackToe
 
         private static int CheckWin()
         {
-            int[][] winConditions = new int[8][]
+
+            int[,] winConditions =
             {
-                new int[3] { 1, 2, 3 },
-                new int[3] { 4, 5, 6 },
-                new int[3] { 7, 8, 9 },
-                new int[3] { 1, 4, 7 },
-                new int[3] { 2, 5, 8 },
-                new int[3] { 3, 6, 9 },
-                new int[3] { 1, 5, 9 }, 
-                new int[3] { 3, 5, 7 }
+                { 1, 2, 3 },
+                { 4, 5, 6 },
+                { 7, 8, 9 },
+                { 1, 4, 7 },
+                { 2, 5, 8 },
+                { 3, 6, 9 },
+                { 1, 5, 9 },
+                { 3, 5, 7 }
             };
 
-
-            for (int i = 0; i < winConditions.Length; i++)
+            for (int i = 0; i < winConditions.GetLength(0); i++)
             {
-                int[] pattern = winConditions[i];
-                int a = pattern[0];
-                int b = pattern[1];
-                int c = pattern[2];
+                int a = winConditions[i, 0];
+                int b = winConditions[i, 1];
+                int c = winConditions[i, 2];
                 if (list[a] == list[b] && list[b] == list[c])
                 {
-                    return 1; 
+                    return 1;
                 }
             }
 

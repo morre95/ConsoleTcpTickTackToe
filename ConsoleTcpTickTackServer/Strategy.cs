@@ -16,24 +16,23 @@
              * 4,5,6
              * 7,8,9
              */
-            int[][] winPatterns = new int[8][]
+            int[,] winPatterns = 
             {
-                new int[3] {1, 2, 3},
-                new int[3] {4, 5, 6},
-                new int[3] {7, 8, 9},
-                new int[3] {1, 4, 7},
-                new int[3] {2, 5, 8},
-                new int[3] {3, 6, 9},
-                new int[3] {1, 5, 9},
-                new int[3] {3, 5, 7}
+                {1, 2, 3},
+                {4, 5, 6},
+                {7, 8, 9},
+                {1, 4, 7},
+                {2, 5, 8},
+                {3, 6, 9},
+                {1, 5, 9},
+                {3, 5, 7}
             };
 
-            for (int i = 0; i < winPatterns.Length; i++)
+            for (int i = 0; i < winPatterns.GetLength(0); i++)
             {
-                int[] pattern = winPatterns[i];
-                int a = pattern[0]; //1
-                int b = pattern[1]; //5
-                int c = pattern[2]; //9
+                int a = winPatterns[i, 0]; //1
+                int b = winPatterns[i, 1]; //5
+                int c = winPatterns[i, 2]; //9
 
                 int? winMove = IsWining(a, b, c, 'O');
                 if (winMove != null)
