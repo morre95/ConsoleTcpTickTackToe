@@ -184,11 +184,11 @@ namespace ConsoleTcpTickTackToe
             print += "\n";
             print += $"  {list[1]}  |  {list[2]}  |  {list[3]}";
             print += "\n";
-            print += "_____|_____|_____ ";
+            print += "-----|-----|----- ";
             print += "\n";
             print += $"  {list[4]}  |  {list[5]}  |  {list[6]}";
             print += "\n";
-            print += "_____|_____|_____ ";
+            print += "-----|-----|----- ";
             print += "\n";
             print += $"  {list[7]}  |  {list[8]}  |  {list[9]}";
             print += "\n";
