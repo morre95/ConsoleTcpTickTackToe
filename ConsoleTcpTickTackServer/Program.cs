@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json;
+using System.IO.Compression;
 
 namespace ConsoleTcpTickTackServer
 {
@@ -31,13 +32,23 @@ namespace ConsoleTcpTickTackServer
                 while (true)
                 {
                     var handler = await listener.AcceptAsync();
-
+                    string response;
                     while (true)
                     {
                         // Receive message.
                         var buffer = new byte[1_024];
                         var received = await handler.ReceiveAsync(buffer, SocketFlags.None);
-                        var response = Encoding.UTF8.GetString(buffer, 0, received);
+
+                        using (var memoryStream = new MemoryStream(buffer, 0, received))
+                        {
+                            using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+                            {
+                                using (var reader = new StreamReader(gzipStream, Encoding.UTF8))
+                                {
+                                    response = reader.ReadToEnd();
+                                }
+                            }
+                        }
 
                         var eom = "<|EOM|>";
                         if (response.IndexOf(eom) > -1 /* is end of message */)

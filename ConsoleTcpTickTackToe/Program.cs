@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -25,7 +26,15 @@ namespace ConsoleTcpTickTackToe
             while (true)
             {
                 var messageBytes = Encoding.UTF8.GetBytes(msg);
-                _ = await client.SendAsync(messageBytes, SocketFlags.None);
+                using (var memoryStream = new MemoryStream())
+                {
+                    using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress))
+                    {
+                        await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                    }
+                    var compressedData = memoryStream.ToArray();
+                    _ = await client.SendAsync(compressedData, SocketFlags.None);
+                }
                 Debug.WriteLine($"Socket client sent message: \"{msg}\"");
 
                 // Receive ack.
