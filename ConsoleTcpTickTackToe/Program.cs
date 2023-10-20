@@ -2,12 +2,18 @@
 
 namespace ConsoleTcpTickTackToe
 {
+    enum Result
+    {
+        Winner,
+        Draw,
+        None
+    }
     internal class Program
     {
         static List<char> list = new List<char>();
         static int player = 1;
         static int choice;
-        static int flag = 0;
+        static Result flag = Result.None;
 
         static async Task Main(string[] args)
         {
@@ -99,10 +105,10 @@ namespace ConsoleTcpTickTackToe
                 }
                 flag = CheckWin();// calling of check win
             }
-            while (flag != 1 && flag != -1);
+            while (flag != Result.Winner && flag != Result.Draw);
             Console.Clear();
             Board();
-            if (flag == 1)
+            if (flag == Result.Winner)
             {
                 string playerName = (player % 2 == 0) ? "You" : "Server";
                 Console.WriteLine($"{playerName} won");
@@ -147,7 +153,7 @@ namespace ConsoleTcpTickTackToe
             Console.WriteLine(print);
         }
 
-        private static int CheckWin()
+        private static Result CheckWin()
         {
 
             int[,] winConditions =
@@ -169,16 +175,16 @@ namespace ConsoleTcpTickTackToe
                 int c = winConditions[i, 2];
                 if (list[a] == list[b] && list[b] == list[c])
                 {
-                    return 1;
+                    return Result.Winner;
                 }
             }
 
             if (list.All(cell => cell != '1' && cell != '2' && cell != '3' && cell != '4' && cell != '5' && cell != '6' && cell != '7' && cell != '8' && cell != '9'))
             {
-                return -1; 
+                return Result.Draw; 
             }
 
-            return 0;
+            return Result.None;
         }
     }
 }
