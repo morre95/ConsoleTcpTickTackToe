@@ -81,6 +81,8 @@ namespace ConsoleTcpTickTackServer
     {
         private List<char> list = new();
 
+        public List<char> Board => list;
+
         public Strategy(List<char> tableList) 
         { 
             list = tableList;
@@ -112,26 +114,24 @@ namespace ConsoleTcpTickTackServer
                 int b = pattern[1]; //5
                 int c = pattern[2]; //9
 
-                // TODO: vid X1, X5 körde servern 6 i stället för 9. Och den hade 2, 8, 6 och 9 att välja på
+                int? winMove = IsWining(a, b, c, 'O');
+                if (winMove != null)
+                {
+                    return (int)winMove;
+                }
 
-                if (list[a] == 'X' && list[b] == 'X' && list[c] != 'O')
+                winMove = IsWining(a, b, c, 'X');
+
+                if (winMove != null)
                 {
-                    return c;
-                }
-                else if (list[b] == 'X' && list[c] == 'X' && list[a] != 'O')
-                {
-                    return a;
-                }
-                else if (list[a] == 'X' && list[c] == 'X' && list[b] != 'O')
-                {
-                    return b;
+                    return (int)winMove;
                 }
             }
 
 
             if (list.FindAll(x => x == 'X').Count == 1)
             {
-                if (list[1] == 'X' && list[5] == 'O')
+                if (list[1] == 'X' && list[5] != 'O')
                 {
                     return 5;
                 }
@@ -160,6 +160,25 @@ namespace ConsoleTcpTickTackServer
             Random rnd = new();
 
             return rnd.Next(1, 10);
+        }
+
+        public int? IsWining(int a, int b, int c, char player = 'O')
+        {
+            char op = player == 'X' ? 'O' : 'X';
+
+            if (list[a] == player && list[b] == player && list[c] != op)
+            {
+                return c;
+            }
+            else if (list[b] == player && list[c] == player && list[a] != op)
+            {
+                return a;
+            }
+            else if (list[a] == player && list[c] == player && list[b] != op)
+            {
+                return b;
+            }
+            return null;
         }
     }
 
