@@ -1,61 +1,7 @@
-﻿using System.Diagnostics;
-using System.IO.Compression;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace ConsoleTcpTickTackToe
 {
-
-    public class Client
-    {
-        private static IPEndPoint ipEndPoint = new(IPAddress.Parse("127.0.0.1"), 13);
-
-        public static async Task<int> RequestNextMove(string msg)
-        {
-            using Socket client = new(
-                ipEndPoint.AddressFamily,
-                SocketType.Stream,
-                ProtocolType.Tcp);
-            await client.ConnectAsync(ipEndPoint);
-
-            msg += "<|EOM|>";
-
-            string response;
-            while (true)
-            {
-                var messageBytes = Encoding.UTF8.GetBytes(msg);
-                using (var memoryStream = new MemoryStream())
-                {
-                    using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress))
-                    {
-                        await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length);
-                    }
-                    var compressedData = memoryStream.ToArray();
-                    _ = await client.SendAsync(compressedData, SocketFlags.None);
-                }
-                Debug.WriteLine($"Socket client sent message: \"{msg}\"");
-
-                // Receive ack.
-                var buffer = new byte[1_024];
-                var received = await client.ReceiveAsync(buffer, SocketFlags.None);
-                response = Encoding.UTF8.GetString(buffer, 0, received);
-                string ack = "<|ACK|>";
-                if (response.EndsWith(ack))
-                {
-                    Debug.WriteLine($"Socket client received acknowledgment: \"{response}\"");
-                    response = response.Replace(ack, "");
-                    break;
-                }
-            }
-
-            client.Shutdown(SocketShutdown.Both);
-            Debug.WriteLine($"Message received: '{response}'");
-            return int.Parse(response);
-        }
-    }
-
     internal class Program
     {
         static List<char> list = new List<char>();
@@ -208,61 +154,37 @@ namespace ConsoleTcpTickTackToe
 
         private static int CheckWin()
         {
-            #region Horzontal Winning Condtion
-            //Winning Condition For First Row
-            if (list[1] == list[2] && list[2] == list[3])
+            int[][] winConditions = new int[][]
             {
-                return 1;
-            }
-            //Winning Condition For Second Row
-            else if (list[4] == list[5] && list[5] == list[6])
+                new int[] { 1, 2, 3 },
+                new int[] { 4, 5, 6 },
+                new int[] { 7, 8, 9 },
+                new int[] { 1, 4, 7 },
+                new int[] { 2, 5, 8 },
+                new int[] { 3, 6, 9 },
+                new int[] { 1, 5, 9 }, 
+                new int[] { 3, 5, 7 }
+            };
+
+
+            for (int i = 0; i < winConditions.Length; i++)
             {
-                return 1;
+                int[] pattern = winConditions[i];
+                int a = pattern[0];
+                int b = pattern[1];
+                int c = pattern[2];
+                if (list[a] == list[b] && list[b] == list[c])
+                {
+                    return 1; 
+                }
             }
-            //Winning Condition For Third Row
-            else if (list[6] == list[7] && list[7] == list[8])
+
+            if (list.All(cell => cell != '1' && cell != '2' && cell != '3' && cell != '4' && cell != '5' && cell != '6' && cell != '7' && cell != '8' && cell != '9'))
             {
-                return 1;
+                return -1; 
             }
-            #endregion
-            #region vertical Winning Condtion
-            //Winning Condition For First Column
-            else if (list[1] == list[4] && list[4] == list[7])
-            {
-                return 1;
-            }
-            //Winning Condition For Second Column
-            else if (list[2] == list[5] && list[5] == list[8])
-            {
-                return 1;
-            }
-            //Winning Condition For Third Column
-            else if (list[3] == list[6] && list[6] == list[9])
-            {
-                return 1;
-            }
-            #endregion
-            #region Diagonal Winning Condition
-            else if (list[1] == list[5] && list[5] == list[9])
-            {
-                return 1;
-            }
-            else if (list[3] == list[5] && list[5] == list[7])
-            {
-                return 1;
-            }
-            #endregion
-            #region Checking For Draw
-            // If all the cells or values filled with X or O then any player has won the match
-            else if (list[1] != '1' && list[2] != '2' && list[3] != '3' && list[4] != '4' && list[5] != '5' && list[6] != '6' && list[7] != '7' && list[8] != '8' && list[9] != '9')
-            {
-                return -1;
-            }
-            #endregion
-            else
-            {
-                return 0;
-            }
+
+            return 0;
         }
     }
 }
