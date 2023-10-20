@@ -112,19 +112,17 @@ namespace ConsoleTcpTickTackServer
                 int b = pattern[1]; //5
                 int c = pattern[2]; //9
 
-                // TODO: vid X1, X5 körde servern 6 i stället för 9. Och den hade 2, 8, 6 och 9 att välja på
+                int? winMove = IsWining(a, b, c, 'O');
+                if (winMove != null)
+                {
+                    return (int)winMove;
+                }
 
-                if (list[a] == 'X' && list[b] == 'X' && list[c] != 'O')
+                winMove = IsWining(a, b, c, 'X');
+
+                if (winMove != null)
                 {
-                    return c;
-                }
-                else if (list[b] == 'X' && list[c] == 'X' && list[a] != 'O')
-                {
-                    return a;
-                }
-                else if (list[a] == 'X' && list[c] == 'X' && list[b] != 'O')
-                {
-                    return b;
+                    return (int)winMove;
                 }
             }
 
