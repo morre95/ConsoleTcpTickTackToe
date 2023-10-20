@@ -161,6 +161,25 @@ namespace ConsoleTcpTickTackServer
 
             return rnd.Next(1, 10);
         }
+
+        public int? IsWining(int a, int b, int c, char player = 'O')
+        {
+            char op = player == 'X' ? 'O' : 'X';
+
+            if (list[a] == player && list[b] == player && list[c] != op)
+            {
+                return c;
+            }
+            else if (list[b] == player && list[c] == player && list[a] != op)
+            {
+                return a;
+            }
+            else if (list[a] == player && list[c] == player && list[b] != op)
+            {
+                return b;
+            }
+            return null;
+        }
     }
 
     internal class Program
