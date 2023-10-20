@@ -154,16 +154,16 @@ namespace ConsoleTcpTickTackToe
 
         private static int CheckWin()
         {
-            int[][] winConditions = new int[][]
+            int[][] winConditions = new int[8][]
             {
-                new int[] { 1, 2, 3 },
-                new int[] { 4, 5, 6 },
-                new int[] { 7, 8, 9 },
-                new int[] { 1, 4, 7 },
-                new int[] { 2, 5, 8 },
-                new int[] { 3, 6, 9 },
-                new int[] { 1, 5, 9 }, 
-                new int[] { 3, 5, 7 }
+                new int[3] { 1, 2, 3 },
+                new int[3] { 4, 5, 6 },
+                new int[3] { 7, 8, 9 },
+                new int[3] { 1, 4, 7 },
+                new int[3] { 2, 5, 8 },
+                new int[3] { 3, 6, 9 },
+                new int[3] { 1, 5, 9 }, 
+                new int[3] { 3, 5, 7 }
             };
 
 
