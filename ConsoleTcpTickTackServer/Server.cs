@@ -36,17 +36,7 @@ namespace ConsoleTcpTickTackServer
                         // Receive message.
                         var buffer = new byte[1_024];
                         var received = await handler.ReceiveAsync(buffer, SocketFlags.None);
-
-                        using (var memoryStream = new MemoryStream(buffer, 0, received))
-                        {
-                            using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
-                            {
-                                using (var reader = new StreamReader(gzipStream, Encoding.UTF8))
-                                {
-                                    response = reader.ReadToEnd();
-                                }
-                            }
-                        }
+                        response = DeCompress(buffer, received);
 
                         var eom = "<|EOM|>";
                         if (response.IndexOf(eom) > -1 /* is end of message */)
@@ -56,12 +46,8 @@ namespace ConsoleTcpTickTackServer
                             List<char> list = JsonSerializer.Deserialize<List<char>>(response)!;
                             strategy = new(list);
 
-                            Debug.WriteLine($"Socket server received message: \"{response}\"");
-
                             var ackMessage = $"{strategy.OWin()}<|ACK|>";
-                            var echoBytes = Encoding.UTF8.GetBytes(ackMessage);
-                            await handler.SendAsync(echoBytes, 0);
-                            Console.WriteLine($"Socket server sent acknowledgment: \"{ackMessage}\"");
+                            await Send(ackMessage, handler);
 
                             break;
                         }
@@ -72,6 +58,30 @@ namespace ConsoleTcpTickTackServer
             {
                 listener.Dispose();
             }
+        }
+
+        private static async Task Send(string ackMessage, Socket handler)
+        {
+            var echoBytes = Encoding.UTF8.GetBytes(ackMessage);
+            await handler.SendAsync(echoBytes, 0);
+            Console.WriteLine($"Socket server sent acknowledgment: \"{ackMessage}\"");
+        }
+
+        private static string DeCompress(byte[] buffer, int received)
+        {
+            string response;
+            using (var memoryStream = new MemoryStream(buffer, 0, received))
+            {
+                using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+                {
+                    using (var reader = new StreamReader(gzipStream, Encoding.UTF8))
+                    {
+                        response = reader.ReadToEnd();
+                    }
+                }
+            }
+
+            return response;
         }
     }
 }

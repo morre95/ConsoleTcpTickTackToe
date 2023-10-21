@@ -23,17 +23,7 @@ namespace ConsoleTcpTickTackToe
             string response;
             while (true)
             {
-                var messageBytes = Encoding.UTF8.GetBytes(msg);
-                using (var memoryStream = new MemoryStream())
-                {
-                    using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress))
-                    {
-                        await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length);
-                    }
-                    var compressedData = memoryStream.ToArray();
-                    _ = await client.SendAsync(compressedData, SocketFlags.None);
-                }
-                Debug.WriteLine($"Socket client sent message: \"{msg}\"");
+                await Compress(msg, client);
 
                 // Receive ack.
                 var buffer = new byte[1_024];
@@ -42,15 +32,32 @@ namespace ConsoleTcpTickTackToe
                 string ack = "<|ACK|>";
                 if (response.EndsWith(ack))
                 {
-                    Debug.WriteLine($"Socket client received acknowledgment: \"{response}\"");
                     response = response.Replace(ack, "");
                     break;
                 }
             }
 
             client.Shutdown(SocketShutdown.Both);
-            Debug.WriteLine($"Message received: '{response}'");
             return int.Parse(response);
+        }
+
+        private static async Task Compress(string message, Socket client)
+        {
+            var messageBytes = Encoding.UTF8.GetBytes(message);
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress))
+                {
+                    await gzipStream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                }
+                await Send(client, memoryStream);
+            }
+        }
+
+        private static async Task Send(Socket client, MemoryStream memoryStream)
+        {
+            var compressedData = memoryStream.ToArray();
+            _ = await client.SendAsync(compressedData, SocketFlags.None);
         }
     }
 }
