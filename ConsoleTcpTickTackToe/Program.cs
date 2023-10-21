@@ -65,17 +65,15 @@ namespace ConsoleTcpTickTackToe
                         }
                     }
                     while (!isValid);
-
-
                 }
                 else
                 {
-                    bool isOk;
-                    string msg = JsonSerializer.Serialize(board.ToList());
+                    bool isValid;
+                    string message = JsonSerializer.Serialize(board.ToList());
                     do
                     {
-                        isOk = board.SetPlayer(await Client.RequestNextMove(msg), Player.Server);
-                    } while (!isOk);
+                        isValid = board.SetPlayer(await Client.RequestNextMove(message), Player.Server);
+                    } while (!isValid);
                 }
 
                 result = board.CheckWin();
@@ -83,10 +81,13 @@ namespace ConsoleTcpTickTackToe
 
             Console.Clear();
             board.Print();
+            ShowResult((p % 2 == 0) ? "You" : "Server", result);
+        }
 
+        private static void ShowResult(string playerName, Result result)
+        {
             if (result == Result.Winner)
             {
-                string playerName = (p % 2 == 0) ? "You" : "Server";
                 Console.WriteLine($"{playerName} won");
             }
             else if (result == Result.Draw)
