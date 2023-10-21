@@ -10,7 +10,7 @@ namespace ConsoleTcpTickTackToe
     internal class Program
     {
         static int size = 3;
-        static Board board;
+        static Board? board;
         static async Task Main(string[] args)
         {
             board = new Board(size);

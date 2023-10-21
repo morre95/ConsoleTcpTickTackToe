@@ -72,15 +72,46 @@
 
         public void Print()
         {
-            Console.WriteLine("     |     |     ");
-            Console.WriteLine($"  {GetSquare(0)}  |  {GetSquare(1)}  |  {GetSquare(2)}");
-            Console.WriteLine("-----|-----|-----");
-            Console.WriteLine($"  {GetSquare(3)}  |  {GetSquare(4)}  |  {GetSquare(5)}");
-            Console.WriteLine("-----|-----|-----");
-            Console.WriteLine($"  {GetSquare(6)}  |  {GetSquare(7)}  |  {GetSquare(8)}");
-            Console.WriteLine("     |     |     ");
+            // TODO: Detta försöka att göra Print() med dynamisk fungerar inte då det är chars som inte klarar mer än ett tecken.
+            // Och när man ändrar till string så blir det knas när det är två tecken eller mera eftersom två tecken tar mer plats
+            string str = RepeatPattern();
+            str += "\n";
+            for (int i = 0; i < size * size; i++)
+            {
+                if (i % size == 0 && i != 0)
+                {
+                    str += "\n";
+                    str += RepeatPattern('-');
+                    str += "\n";
+                }
+                str += $"  {GetSquare(i)}  ";
+                if (i % size != size - 1)
+                {
+                    str += "|";
+                }
+            }
+            str += "\n";
+            str += RepeatPattern();
+            Console.WriteLine(str);
         }
 
+        private string RepeatPattern(char c = ' ')
+        {
+            string str = "";
+            for (int i = 0; i < size; i++)
+            {
+                if (i == 0)
+                {
+                    str += new string(c, 5);
+                }
+                else
+                {
+                    str += $"|{new string(c, 5)}";
+                }
+            }
+
+            return str;
+        }
     }
 
 }
