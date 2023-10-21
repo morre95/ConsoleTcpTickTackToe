@@ -30,21 +30,21 @@
 
             for (int i = 0; i < winPatterns.GetLength(0); i++)
             {
-                int a = winPatterns[i, 0]; //1
-                int b = winPatterns[i, 1]; //5
-                int c = winPatterns[i, 2]; //9
+                int a = winPatterns[i, 0] - 1; //1
+                int b = winPatterns[i, 1] - 1; //5
+                int c = winPatterns[i, 2] - 1; //9
 
                 int? winMove = IsWining(a, b, c, 'O');
                 if (winMove != null)
                 {
-                    return (int)winMove;
+                    return (int)winMove + 1;
                 }
 
                 winMove = IsWining(a, b, c, 'X');
 
                 if (winMove != null)
                 {
-                    return (int)winMove;
+                    return (int)winMove + 1;
                 }
             }
 
