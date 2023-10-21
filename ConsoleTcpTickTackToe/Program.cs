@@ -7,12 +7,89 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ConsoleTcpTickTackToe
 {
+
+    public class TicTacAI
+    {
+        private static int Minimax(bool isMaxTurn, Player maximizerMark, Board board)
+        {
+            Result state = board.GetState();
+            if (state == Result.Draw)
+            {
+                return 0;
+            }
+            else if (state == Result.Winner)
+            {
+                return (board.GetWinner() == maximizerMark) ? 1 : -1;
+            }
+
+            List<int> scores = new List<int>();
+            foreach (int move in board.GetPossibleMoves)
+            {
+                board.MakeMove(move);
+                scores.Add(Minimax(!isMaxTurn, maximizerMark, board));
+                board.Undo();
+            }
+
+            return isMaxTurn ? scores.Max() : scores.Min();
+        }
+
+        public static int MakeBestMove(Board ticTacBoard, Player aiPlayer)
+        {
+            int bestScore = int.MinValue;
+            int bestMove = -1;
+            foreach (int move in ticTacBoard.GetPossibleMoves)
+            {
+                ticTacBoard.MakeMove(move);
+                int score = Minimax(false, aiPlayer, ticTacBoard);
+                ticTacBoard.Undo();
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+            return bestMove;
+        }
+    }
+
     internal class Program
     {
         static int size = 3;
         static Board board = new(size);
         static async Task Main(string[] args)
         {
+            board.MakeMove(1);
+            board.MakeMove(8);
+            // FIXME: Den kastar StackOverflowException: 'Exception_WasThrown' på rad 66 i Board klassen
+            //TicTacAI.MakeBestMove(board, Player.Server);
+            board.MakeMove(2);
+            board.MakeMove(7);
+            board.MakeMove(3);
+            board.Undo();
+            board.MakeMove(3);
+
+            var s = board.GetState();
+
+            if (s == Result.Winner) 
+            {
+                if (board.GetWinner() == Player.Server)
+                {
+                    Console.WriteLine($"Server won");
+                }
+                else
+                {
+                    Console.WriteLine($"You won");
+                }
+            }
+
+            board.Print();
+
+            
+
+
+            return;
+
+
             await Play();
             while (true)
             {
@@ -76,7 +153,7 @@ namespace ConsoleTcpTickTackToe
                     } while (!isValid);
                 }
 
-                result = board.CheckWin();
+                result = board.GetState();
             }
 
             Console.Clear();

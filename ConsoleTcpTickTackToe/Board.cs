@@ -6,6 +6,20 @@
 
         private int size = 3;
 
+        private int[,] winningCombination =
+        {
+            { 1, 2, 3 },
+            { 4, 5, 6 },
+            { 7, 8, 9 },
+            { 1, 4, 7 },
+            { 2, 5, 8 },
+            { 3, 6, 9 },
+            { 1, 5, 9 },
+            { 3, 5, 7 }
+        };
+
+        public int[,] GetPossibleMoves => winningCombination; 
+
         public Board(int size)
         {
             this.size = size;
@@ -36,26 +50,13 @@
             return list;
         }
 
-        public Result CheckWin()
+        public Result GetState()
         {
-
-            int[,] winConditions =
+            for (int i = 0; i < winningCombination.GetLength(0); i++)
             {
-                { 1, 2, 3 },
-                { 4, 5, 6 },
-                { 7, 8, 9 },
-                { 1, 4, 7 },
-                { 2, 5, 8 },
-                { 3, 6, 9 },
-                { 1, 5, 9 },
-                { 3, 5, 7 }
-            };
-
-            for (int i = 0; i < winConditions.GetLength(0); i++)
-            {
-                int a = winConditions[i, 0] - 1;
-                int b = winConditions[i, 1] - 1;
-                int c = winConditions[i, 2] - 1;
+                int a = winningCombination[i, 0] - 1;
+                int b = winningCombination[i, 1] - 1;
+                int c = winningCombination[i, 2] - 1;
                 if (squares[a].Mark == squares[b].Mark && squares[b].Mark == squares[c].Mark)
                 {
                     return Result.Winner;
@@ -68,6 +69,30 @@
             }
 
             return Result.None;
+        }
+
+        Stack<int> moves = new();
+
+        public void MakeMove(int move)
+        {
+            Player player = Player.Server;
+            if (moves.Count % 2 == 0)
+            {
+                player = Player.You;
+            }
+            SetPlayer(move, player);
+            moves.Push(move);
+        }
+
+        public void Undo()
+        {
+            int last = moves.Pop();
+            squares[last - 1] = new Square(char.Parse(last.ToString()));
+        }
+
+        public Player GetWinner()
+        {
+            return (Player)(moves.Count % 2);
         }
 
         public void Print()
