@@ -4,6 +4,8 @@
     {
         private Square[] squares;
 
+        public Square[] Squares => squares;
+
         private int size = 3;
 
         private int[,] winningCombination =

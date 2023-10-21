@@ -32,6 +32,27 @@ namespace ConsoleTcpTickTackToe
 
         public static int MakeBestMove(Board ticTacBoard, Player aiPlayer)
         {
+            int[,] winingMoves = ticTacBoard.PossibleMoves;
+            for (int i = 0; i < winingMoves.GetLength(0); i++)
+            {
+                int a = winingMoves[i, 0] - 1; //1
+                int b = winingMoves[i, 1] - 1; //5
+                int c = winingMoves[i, 2] - 1; //9
+
+                if (ticTacBoard.Squares[a].Mark == 'X' && ticTacBoard.Squares[b].Mark == 'X' && ticTacBoard.Squares[c].Mark != 'O')
+                {
+                    return c + 1;
+                }
+                else if (ticTacBoard.Squares[b].Mark == 'X' && ticTacBoard.Squares[c].Mark == 'X' && ticTacBoard.Squares[a].Mark != 'O')
+                {
+                    return a + 1;
+                }
+                else if (ticTacBoard.Squares[a].Mark == 'X' && ticTacBoard.Squares[c].Mark == 'X' && ticTacBoard.Squares[b].Mark != 'O')
+                {
+                    return b + 1;
+                }
+            }
+
             int bestScore = int.MinValue;
             int bestMove = -1;
             foreach (int move in ticTacBoard.PossibleMoves)
