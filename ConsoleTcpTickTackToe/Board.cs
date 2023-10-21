@@ -18,7 +18,7 @@
             { 3, 5, 7 }
         };
 
-        public int[,] GetPossibleMoves => winningCombination; 
+        public int[,] PossibleMoves => winningCombination; 
 
         public Board(int size)
         {
@@ -73,15 +73,20 @@
 
         Stack<int> moves = new();
 
-        public void MakeMove(int move)
+        public bool MakeMove(int move)
         {
             Player player = Player.Server;
             if (moves.Count % 2 == 0)
             {
                 player = Player.You;
             }
-            SetPlayer(move, player);
-            moves.Push(move);
+
+            if (SetPlayer(move, player))
+            {
+                moves.Push(move);
+                return true;
+            }
+            return false;
         }
 
         public void Undo()
@@ -92,7 +97,7 @@
 
         public Player GetWinner()
         {
-            return (Player)(moves.Count % 2);
+            return (moves.Count % 2 == 0) ? Player.You : Player.Server;
         }
 
         public void Print()

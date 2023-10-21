@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Numerics;
+﻿using System.Diagnostics;
 using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ConsoleTcpTickTackToe
 {
@@ -23,11 +19,12 @@ namespace ConsoleTcpTickTackToe
             }
 
             List<int> scores = new List<int>();
-            foreach (int move in board.GetPossibleMoves)
+            foreach (int move in board.PossibleMoves)
             {
-                board.MakeMove(move);
-                scores.Add(Minimax(!isMaxTurn, maximizerMark, board));
+                if (!board.MakeMove(move)) continue;
+                int score = Minimax(!isMaxTurn, maximizerMark, board);
                 board.Undo();
+                scores.Add(score);
             }
 
             return isMaxTurn ? scores.Max() : scores.Min();
@@ -37,9 +34,9 @@ namespace ConsoleTcpTickTackToe
         {
             int bestScore = int.MinValue;
             int bestMove = -1;
-            foreach (int move in ticTacBoard.GetPossibleMoves)
+            foreach (int move in ticTacBoard.PossibleMoves)
             {
-                ticTacBoard.MakeMove(move);
+                if (!ticTacBoard.MakeMove(move)) continue;
                 int score = Minimax(false, aiPlayer, ticTacBoard);
                 ticTacBoard.Undo();
                 if (score > bestScore)
@@ -58,15 +55,50 @@ namespace ConsoleTcpTickTackToe
         static Board board = new(size);
         static async Task Main(string[] args)
         {
-            board.MakeMove(1);
-            board.MakeMove(8);
-            // FIXME: Den kastar StackOverflowException: 'Exception_WasThrown' på rad 66 i Board klassen
-            //TicTacAI.MakeBestMove(board, Player.Server);
+            /*board.MakeMove(2);
+            int move = TicTacAI.MakeBestMove(board, Player.Server);
+            board.MakeMove(move);
             board.MakeMove(2);
             board.MakeMove(7);
             board.MakeMove(3);
             board.Undo();
-            board.MakeMove(3);
+            board.MakeMove(3);*/
+            int p = 1;
+            Result result = Result.None;
+            while (result == Result.None)
+            {
+                Console.Clear();
+                board.Print();
+                p++;
+                if (p % 2 == 0)
+                {
+                    bool isValid;
+                    do
+                    {
+                        Console.Write("Your move: ");
+                        isValid = int.TryParse(Console.ReadLine(), out int index) &&
+                            index > 0 && index <= size * size && board.SetPlayer(index, Player.You);
+
+                        if (!isValid)
+                        {
+                            Console.WriteLine($"Please enter number between 1 - {size * size}");
+                        }
+                    }
+                    while (!isValid);
+                }
+                else
+                {
+                    bool isValid;
+                    do
+                    {
+                        int move = TicTacAI.MakeBestMove(board, Player.Server);
+                        isValid = board.SetPlayer(move, Player.Server);
+                    } while (!isValid);
+                }
+
+                result = board.GetState();
+            }
+
 
             var s = board.GetState();
 
@@ -80,6 +112,10 @@ namespace ConsoleTcpTickTackToe
                 {
                     Console.WriteLine($"You won");
                 }
+            }
+            else if (s == Result.Draw)
+            {
+                Console.WriteLine($"Draw");
             }
 
             board.Print();
