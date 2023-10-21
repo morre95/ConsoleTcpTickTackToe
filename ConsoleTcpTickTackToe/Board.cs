@@ -18,7 +18,7 @@
 
         public bool SetPlayer(int index, Player player)
         {
-            return squares[index].SetPlayer(player);
+            return squares[index - 1].SetPlayer(player);
         }
 
         public char GetSquare(int index)

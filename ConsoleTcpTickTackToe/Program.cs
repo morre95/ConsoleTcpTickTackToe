@@ -10,10 +10,9 @@ namespace ConsoleTcpTickTackToe
     internal class Program
     {
         static int size = 3;
-        static Board? board;
+        static Board board = new(size);
         static async Task Main(string[] args)
         {
-            board = new Board(size);
             await Play();
             while (true)
             {
@@ -58,12 +57,11 @@ namespace ConsoleTcpTickTackToe
                     {
                         Console.Write("Your move: ");
                         isValid = int.TryParse(Console.ReadLine(), out int index) &&
-                            index > 0 && index < 10 &&
-                            board.SetPlayer(index - 1, Player.You);
+                            index > 0 && index <= size * size && board.SetPlayer(index, Player.You);
 
                         if (!isValid)
                         {
-                            Console.WriteLine("Please enter number between 1 - 9");
+                            Console.WriteLine($"Please enter number between 1 - {size * size}");
                         }
                     }
                     while (!isValid);
@@ -76,7 +74,7 @@ namespace ConsoleTcpTickTackToe
                     string msg = JsonSerializer.Serialize(board.ToList());
                     do
                     {
-                        isOk = board.SetPlayer(await Client.RequestNextMove(msg) - 1, Player.Server);
+                        isOk = board.SetPlayer(await Client.RequestNextMove(msg), Player.Server);
                     } while (!isOk);
                 }
 
