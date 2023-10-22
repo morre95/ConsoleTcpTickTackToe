@@ -24,24 +24,23 @@ namespace ConsoleTcpTickTackServer
 
             listener.Bind(ipEndPoint);
             listener.Listen(100);
+            await HandleMessages(listener);
+        }
 
+        private async Task HandleMessages(Socket listener)
+        {
             try
             {
-               
-                Strategy strategy;
                 while (true)
                 {
                     var handler = await listener.AcceptAsync();
                     string response;
                     while (true)
                     {
-                        // Receive message.
-                        var buffer = new byte[1_024];
-                        var received = await handler.ReceiveAsync(buffer, SocketFlags.None);
-                        response = DeCompress(buffer, received);
+                        response = await ReceiveEom(handler);
 
                         var eom = "<|EOM|>";
-                        if (response.IndexOf(eom) > -1 /* is end of message */)
+                        if (response.IndexOf(eom) > -1)
                         {
                             response = response.Replace(eom, "");
 
@@ -52,12 +51,19 @@ namespace ConsoleTcpTickTackServer
                             break;
                         }
                     }
-                }  
+                }
             }
             finally
             {
                 listener.Dispose();
             }
+        }
+
+        private static async Task<string> ReceiveEom(Socket handler)
+        {
+            var buffer = new byte[1_024];
+            var received = await handler.ReceiveAsync(buffer, SocketFlags.None);
+            return DeCompress(buffer, received);
         }
 
         private string MessageFactory(string response)
