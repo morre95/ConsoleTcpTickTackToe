@@ -80,8 +80,7 @@ namespace ConsoleTcpTickTackToe
             State state = State.None;
             while (state == State.None)
             {
-                Console.Clear();
-                board.Print();
+                PrintBoard();
 
                 if (board.WhosTurn() == Player.You)
                 {
@@ -113,10 +112,16 @@ namespace ConsoleTcpTickTackToe
                 state = board.GetState();
             }
 
-            Console.Clear();
-            board.Print();
+            PrintBoard();
 
             ShowResult(board.GetWinner().ToString(), state);
+        }
+
+        private static void PrintBoard()
+        {
+            Console.Clear();
+            Console.WriteLine($"{difficulty}");
+            board.Print();
         }
 
         private static string ResponseFactory()
