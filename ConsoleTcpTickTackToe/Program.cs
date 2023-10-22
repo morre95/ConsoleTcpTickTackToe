@@ -199,61 +199,35 @@ namespace ConsoleTcpTickTackToe
 
         private static int CheckWin()
         {
-            #region Horzontal Winning Condtion
-            //Winning Condition For First Row
-            if (list[1] == list[2] && list[2] == list[3])
+            int[,] winConditions =
             {
-                return 1;
-            }
-            //Winning Condition For Second Row
-            else if (list[4] == list[5] && list[5] == list[6])
+                { 1, 2, 3 },
+                { 4, 5, 6 },
+                { 7, 8, 9 },
+                { 1, 4, 7 },
+                { 2, 5, 8 },
+                { 3, 6, 9 },
+                { 1, 5, 9 },
+                { 3, 5, 7 }
+            };
+
+            for (int i = 0; i < winConditions.GetLength(0); i++)
             {
-                return 1;
+                int a = winConditions[i, 0];
+                int b = winConditions[i, 1];
+                int c = winConditions[i, 2];
+                if (list[a] == list[b] && list[b] == list[c])
+                {
+                    return 1;
+                }
             }
-            //Winning Condition For Third Row
-            else if (list[6] == list[7] && list[7] == list[8])
-            {
-                return 1;
-            }
-            #endregion
-            #region vertical Winning Condtion
-            //Winning Condition For First Column
-            else if (list[1] == list[4] && list[4] == list[7])
-            {
-                return 1;
-            }
-            //Winning Condition For Second Column
-            else if (list[2] == list[5] && list[5] == list[8])
-            {
-                return 1;
-            }
-            //Winning Condition For Third Column
-            else if (list[3] == list[6] && list[6] == list[9])
-            {
-                return 1;
-            }
-            #endregion
-            #region Diagonal Winning Condition
-            else if (list[1] == list[5] && list[5] == list[9])
-            {
-                return 1;
-            }
-            else if (list[3] == list[5] && list[5] == list[7])
-            {
-                return 1;
-            }
-            #endregion
-            #region Checking For Draw
-            // If all the cells or values filled with X or O then any player has won the match
-            else if (list[1] != '1' && list[2] != '2' && list[3] != '3' && list[4] != '4' && list[5] != '5' && list[6] != '6' && list[7] != '7' && list[8] != '8' && list[9] != '9')
+
+            if (list.All(x => x != '1' && x != '2' && x != '3' && x != '4' && x != '5' && x != '6' && x != '7' && x != '8' && x != '9'))
             {
                 return -1;
             }
-            #endregion
-            else
-            {
-                return 0;
-            }
+
+            return 0;
         }
     }
 }
