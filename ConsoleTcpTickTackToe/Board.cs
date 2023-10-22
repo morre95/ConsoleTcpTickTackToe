@@ -17,7 +17,7 @@ namespace ConsoleTcpTickTackToe
                 char[] sq = new char[squares.Length];
                 for (int i = 0; i < squares.Length; i++)
                 {
-                    sq[i] = squares[i].Mark;
+                    sq[i] = squares[i].Badge;
                 }
                 return sq;
             }
@@ -73,7 +73,7 @@ namespace ConsoleTcpTickTackToe
 
         public char GetSquare(int index)
         {
-            return squares[index].Mark;
+            return squares[index].Badge;
         }
 
         public List<char> ToList()
@@ -81,7 +81,7 @@ namespace ConsoleTcpTickTackToe
             List<char> list = new();
             foreach (Square sq in squares)
             {
-                list.Add(sq.Mark);
+                list.Add(sq.Badge);
             }
             return list;
         }
@@ -93,13 +93,13 @@ namespace ConsoleTcpTickTackToe
                 int a = winningCombination[i, 0] - 1;
                 int b = winningCombination[i, 1] - 1;
                 int c = winningCombination[i, 2] - 1;
-                if (squares[a].Mark == squares[b].Mark && squares[b].Mark == squares[c].Mark)
+                if (squares[a].Badge == squares[b].Badge && squares[b].Badge == squares[c].Badge)
                 {
                     return State.Winner;
                 }
             }
 
-            if (squares.All(cell => cell.Mark != '1' && cell.Mark != '2' && cell.Mark != '3' && cell.Mark != '4' && cell.Mark != '5' && cell.Mark != '6' && cell.Mark != '7' && cell.Mark != '8' && cell.Mark != '9'))
+            if (squares.All(cell => cell.Badge != '1' && cell.Badge != '2' && cell.Badge != '3' && cell.Badge != '4' && cell.Badge != '5' && cell.Badge != '6' && cell.Badge != '7' && cell.Badge != '8' && cell.Badge != '9'))
             {
                 return State.Draw;
             }

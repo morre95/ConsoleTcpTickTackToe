@@ -45,15 +45,15 @@ namespace ConsoleTcpTickTackServer
                 int b = winingMoves[i, 1] - 1;
                 int c = winingMoves[i, 2] - 1;
 
-                if (ticTacBoard.Squares[a].Mark == op && ticTacBoard.Squares[b].Mark == op && ticTacBoard.Squares[c].Mark != ai)
+                if (ticTacBoard.Squares[a].Badge == op && ticTacBoard.Squares[b].Badge == op && ticTacBoard.Squares[c].Badge != ai)
                 {
                     return c + 1;
                 }
-                else if (ticTacBoard.Squares[b].Mark == op && ticTacBoard.Squares[c].Mark == op && ticTacBoard.Squares[a].Mark != ai)
+                else if (ticTacBoard.Squares[b].Badge == op && ticTacBoard.Squares[c].Badge == op && ticTacBoard.Squares[a].Badge != ai)
                 {
                     return a + 1;
                 }
-                else if (ticTacBoard.Squares[a].Mark == op && ticTacBoard.Squares[c].Mark == op && ticTacBoard.Squares[b].Mark != ai)
+                else if (ticTacBoard.Squares[a].Badge == op && ticTacBoard.Squares[c].Badge == op && ticTacBoard.Squares[b].Badge != ai)
                 {
                     return b + 1;
                 }

@@ -8,7 +8,7 @@
 
         public Player Player { get { return player; } set { player = value; } }
 
-        public char Mark { get { if (player != Player.None) return (char)player; else return num; } set { num = value; } }
+        public char Badge { get { if (player != Player.None) return (char)player; else return num; } set { num = value; } }
 
         public Square(char number)
         {
