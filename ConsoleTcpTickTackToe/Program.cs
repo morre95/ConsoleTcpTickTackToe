@@ -13,6 +13,8 @@ namespace ConsoleTcpTickTackToe
 
         static async Task Main(string[] args)
         {
+            Console.Title = "Client";
+
             SelectDifficulty();
 
             await Play();
