@@ -1,22 +1,24 @@
-﻿namespace ConsoleTcpTickTackServer
+﻿using ConsoleTcpTickTackToe;
+
+namespace ConsoleTcpTickTackServer
 {
     public class Strategy
     {
         private List<char> list = new();
 
-        public Strategy(List<char> tableList) 
-        { 
+        public Strategy(List<char> tableList)
+        {
             list = tableList;
         }
 
-        public int OWin()
+        public int MakeBestMove()
         {
             /*
              * 1,2,3
              * 4,5,6
              * 7,8,9
              */
-            int[,] winPatterns = 
+            int[,] winPatterns =
             {
                 {1, 2, 3},
                 {4, 5, 6},

@@ -1,14 +1,46 @@
-﻿namespace ConsoleTcpTickTackToe
+﻿using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace ConsoleTcpTickTackToe
 {
     public class Board
     {
-        private Square[] squares;
+        private Square[] squares = new Square[9];
 
+        [JsonIgnore]
         public Square[] Squares => squares;
+
+        [JsonPropertyName("JsonSquares")]
+        public char[] MySquaresAsArray
+        {
+            get
+            {
+                char[] sq = new char[squares.Length];
+                for (int i = 0; i < squares.Length; i++)
+                {
+                    sq[i] = squares[i].Mark;
+                }
+                return sq;
+            }
+            set
+            {
+                int numRows = value.Length;
+                for (int i = 0; i < value.Length; i++)
+                {
+                    Square square = new Square(value[i]);
+                    if (value[i] == 'X') square.Player = Player.You;
+                    else if (value[i] == 'O') square.Player = Player.Server;
+                    else square.Player = Player.None;
+                    squares[i] = square;
+                }
+            }
+        }
 
         private int size = 3;
 
-        private int[,] winningCombination =
+        [JsonIgnore]
+        private readonly int[,] winningCombination =
         {
             { 1, 2, 3 },
             { 4, 5, 6 },
@@ -20,7 +52,9 @@
             { 3, 5, 7 }
         };
 
-        public int[,] PossibleMoves => winningCombination; 
+        Stack<int> moves = new();
+
+        public Board() { }
 
         public Board(int size)
         {
@@ -32,9 +66,11 @@
             }
         }
 
-        public bool SetPlayer(int index, Player player)
+        public int[,] GetPossibleMoves() => winningCombination;
+
+        public bool SetPlayerMove(int index, Player player)
         {
-            return squares[index - 1].SetPlayer(player);
+            return squares[index - 1].SetPlayerMove(player);
         }
 
         public char GetSquare(int index)
@@ -52,7 +88,7 @@
             return list;
         }
 
-        public Result GetState()
+        public State GetState()
         {
             for (int i = 0; i < winningCombination.GetLength(0); i++)
             {
@@ -61,19 +97,19 @@
                 int c = winningCombination[i, 2] - 1;
                 if (squares[a].Mark == squares[b].Mark && squares[b].Mark == squares[c].Mark)
                 {
-                    return Result.Winner;
+                    return State.Winner;
                 }
             }
 
             if (squares.All(cell => cell.Mark != '1' && cell.Mark != '2' && cell.Mark != '3' && cell.Mark != '4' && cell.Mark != '5' && cell.Mark != '6' && cell.Mark != '7' && cell.Mark != '8' && cell.Mark != '9'))
             {
-                return Result.Draw;
+                return State.Draw;
             }
 
-            return Result.None;
+            return State.None;
         }
 
-        Stack<int> moves = new();
+        
 
         public bool MakeMove(int move)
         {
@@ -83,7 +119,7 @@
                 player = Player.You;
             }
 
-            if (SetPlayer(move, player))
+            if (SetPlayerMove(move, player))
             {
                 moves.Push(move);
                 return true;
@@ -97,10 +133,9 @@
             squares[last - 1] = new Square(char.Parse(last.ToString()));
         }
 
-        public Player GetWinner()
-        {
-            return (moves.Count % 2 == 0) ? Player.You : Player.Server;
-        }
+        public Player GetWinner() => (moves.Count % 2 != 0) ? Player.You : Player.Server;
+
+        public Player WhosTurn() => (moves.Count % 2 == 0) ? Player.You : Player.Server;
 
         public void Print()
         {

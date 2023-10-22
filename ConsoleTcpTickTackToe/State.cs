@@ -1,6 +1,6 @@
 ﻿namespace ConsoleTcpTickTackToe
 {
-    public enum Result
+    public enum State
     {
         Winner,
         Draw,

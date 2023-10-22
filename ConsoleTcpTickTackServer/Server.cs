@@ -4,6 +4,8 @@ using System.Text;
 using System.Diagnostics;
 using System.Text.Json;
 using System.IO.Compression;
+using ConsoleTcpTickTackToe;
+using System.Text.RegularExpressions;
 
 namespace ConsoleTcpTickTackServer
 {
@@ -43,10 +45,8 @@ namespace ConsoleTcpTickTackServer
                         {
                             response = response.Replace(eom, "");
 
-                            List<char> list = JsonSerializer.Deserialize<List<char>>(response)!;
-                            strategy = new(list);
+                            string ackMessage = MessageFactory(response);
 
-                            var ackMessage = $"{strategy.OWin()}<|ACK|>";
                             await Send(ackMessage, handler);
 
                             break;
@@ -58,6 +58,40 @@ namespace ConsoleTcpTickTackServer
             {
                 listener.Dispose();
             }
+        }
+
+        private string MessageFactory(string response)
+        {
+            string ackMessage = string.Empty;
+
+            string charArrayPattern = @"^\[\s*(?:""([^""]*)"",?\s*)+\]$";
+
+            string boardPattern = @"^{""(JsonSquares|Squares)"":.*}$";
+
+            // Normal
+            if (Regex.IsMatch(response, charArrayPattern))
+            {
+                List<char> list = JsonSerializer.Deserialize<List<char>>(response)!;
+                Strategy strategy = new(list);
+                Debug.WriteLine("Sever Normal");
+                return $"{strategy.MakeBestMove()}<|ACK|>";
+            } 
+            // Hard
+            else if (Regex.IsMatch(response, boardPattern))
+            {
+                Board board = JsonSerializer.Deserialize<Board>(response)!;
+                Debug.WriteLine("Sever Hard");
+                return $"{TicTacAI.MakeBestMove(board, Player.Server)}<|ACK|>";
+            } 
+            // Easy
+            else if (response == "")
+            {
+                Random rnd = new Random();
+                Debug.WriteLine("Sever Easy");
+                return $"{rnd.Next(1, 10)}<|ACK|>";
+            }
+
+            return ackMessage;
         }
 
         private static async Task Send(string ackMessage, Socket handler)
