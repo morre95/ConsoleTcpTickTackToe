@@ -5,7 +5,7 @@ namespace ConsoleTcpTickTackServer
 {
     public class TicTacAI
     {
-        private static int Minimax(bool isMaxTurn, Player maximizerMark, Board board)
+        private static int Minimax(bool isMaxTurn, Player maximiserPlayer, Board board)
         {
             State state = board.GetState();
             if (state == State.Draw)
@@ -14,14 +14,14 @@ namespace ConsoleTcpTickTackServer
             }
             else if (state == State.Winner)
             {
-                return (board.GetWinner() == maximizerMark) ? 1 : -1;
+                return (board.GetWinner() == maximiserPlayer) ? 1 : -1;
             }
 
             List<int> scores = new List<int>();
             foreach (int move in board.GetPossibleMoves())
             {
                 if (!board.MakeMove(move)) continue;
-                int score = Minimax(!isMaxTurn, maximizerMark, board);
+                int score = Minimax(!isMaxTurn, maximiserPlayer, board);
                 board.Undo();
                 scores.Add(score);
             }
@@ -31,23 +31,29 @@ namespace ConsoleTcpTickTackServer
 
         public static int MakeBestMove(Board ticTacBoard, Player aiPlayer)
         {
+            char op = 'X';
+            char ai = 'O';
+            if (aiPlayer == Player.You)
+            {
+                op = 'O';
+                ai = 'X';
+            }
             int[,] winingMoves = ticTacBoard.GetPossibleMoves();
             for (int i = 0; i < winingMoves.GetLength(0); i++)
             {
-                int a = winingMoves[i, 0] - 1; //1
-                int b = winingMoves[i, 1] - 1; //5
-                int c = winingMoves[i, 2] - 1; //9
+                int a = winingMoves[i, 0] - 1;
+                int b = winingMoves[i, 1] - 1;
+                int c = winingMoves[i, 2] - 1;
 
-                // TODO: 'X' och 'O' borde vara olika beroende på vad aiPlayer har för värde
-                if (ticTacBoard.Squares[a].Mark == 'X' && ticTacBoard.Squares[b].Mark == 'X' && ticTacBoard.Squares[c].Mark != 'O')
+                if (ticTacBoard.Squares[a].Mark == op && ticTacBoard.Squares[b].Mark == op && ticTacBoard.Squares[c].Mark != ai)
                 {
                     return c + 1;
                 }
-                else if (ticTacBoard.Squares[b].Mark == 'X' && ticTacBoard.Squares[c].Mark == 'X' && ticTacBoard.Squares[a].Mark != 'O')
+                else if (ticTacBoard.Squares[b].Mark == op && ticTacBoard.Squares[c].Mark == op && ticTacBoard.Squares[a].Mark != ai)
                 {
                     return a + 1;
                 }
-                else if (ticTacBoard.Squares[a].Mark == 'X' && ticTacBoard.Squares[c].Mark == 'X' && ticTacBoard.Squares[b].Mark != 'O')
+                else if (ticTacBoard.Squares[a].Mark == op && ticTacBoard.Squares[c].Mark == op && ticTacBoard.Squares[b].Mark != ai)
                 {
                     return b + 1;
                 }
