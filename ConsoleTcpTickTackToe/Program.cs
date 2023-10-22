@@ -120,7 +120,7 @@ namespace ConsoleTcpTickTackToe
         private static void PrintBoard()
         {
             Console.Clear();
-            Console.WriteLine($"{difficulty}");
+            Console.WriteLine($"{difficulty}\nYou:X and Server:O");
             board.Print();
         }
 
