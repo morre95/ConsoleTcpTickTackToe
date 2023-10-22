@@ -20,7 +20,6 @@ namespace ConsoleTcpTickTackToe
             {
                 await Compress(msg, client);
 
-                // Receive ack.
                 response = await ReceiveAck(client);
                 string ack = "<|ACK|>";
                 if (response.EndsWith(ack))
