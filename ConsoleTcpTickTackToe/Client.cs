@@ -11,11 +11,7 @@ namespace ConsoleTcpTickTackToe
 
         public static async Task<int> RequestNextMove(string msg)
         {
-            using Socket client = new(
-                ipEndPoint.AddressFamily,
-                SocketType.Stream,
-                ProtocolType.Tcp);
-            await client.ConnectAsync(ipEndPoint);
+            using Socket client = await Connect();
 
             msg += "<|EOM|>";
 
@@ -25,9 +21,7 @@ namespace ConsoleTcpTickTackToe
                 await Compress(msg, client);
 
                 // Receive ack.
-                var buffer = new byte[1_024];
-                var received = await client.ReceiveAsync(buffer, SocketFlags.None);
-                response = Encoding.UTF8.GetString(buffer, 0, received);
+                response = await ReceiveAck(client);
                 string ack = "<|ACK|>";
                 if (response.EndsWith(ack))
                 {
@@ -38,6 +32,23 @@ namespace ConsoleTcpTickTackToe
 
             client.Shutdown(SocketShutdown.Both);
             return int.Parse(response);
+        }
+
+        private static async Task<Socket> Connect()
+        {
+            Socket client = new(
+                            ipEndPoint.AddressFamily,
+                            SocketType.Stream,
+                            ProtocolType.Tcp);
+            await client.ConnectAsync(ipEndPoint);
+            return client;
+        }
+
+        private static async Task<string> ReceiveAck(Socket client)
+        {
+            var buffer = new byte[1_024];
+            var received = await client.ReceiveAsync(buffer, SocketFlags.None);
+            return Encoding.UTF8.GetString(buffer, 0, received);
         }
 
         private static async Task Compress(string message, Socket client)
