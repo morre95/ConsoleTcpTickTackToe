@@ -1,206 +1,156 @@
-﻿using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
+﻿using System.Text.Json;
 
 namespace ConsoleTcpTickTackToe
 {
 
-    public class Client
-    {
-        private static IPEndPoint ipEndPoint = new(IPAddress.Parse("127.0.0.1"), 13);
-
-        public static async Task<int> RequestNextMove()
-        {
-            using TcpClient client = new();
-            await client.ConnectAsync(ipEndPoint);
-            await using NetworkStream stream = client.GetStream();
-
-            var buffer = new byte[1_024];
-            int received = await stream.ReadAsync(buffer);
-
-            var message = Encoding.UTF8.GetString(buffer, 0, received);
-
-            Debug.WriteLine($"Message received: '{message}'");
-            return int.Parse(message);
-        }
-    }
-
     internal class Program
     {
-        static List<char> list = new List<char>();
-        static int player = 1;
-        static int choice;
-        static int flag = 0;
+        static int size = 3;
+        
+        static Board board = new(size);
+
+        static Difficulty difficulty = Difficulty.Easy;
 
         static async Task Main(string[] args)
         {
-            char[] arr = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-            list = new(arr);
+            Console.Title = "Client";
+
+            SelectDifficulty();
+
             await Play();
+            while (true)
+            {
+                if (Confirm("Play again?"))
+                {
+                    board = new Board(size);
+                    await Play();
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+        }
+
+        private static void SelectDifficulty()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                Console.WriteLine($"{(Difficulty)i} = {i + 1}");
+            }
+
+            bool isValid;
+            int index;
+            do
+            {
+                Console.Write("Select Difficulty: ");
+                isValid = int.TryParse(Console.ReadLine(), out index) && index > 0 && index <= 3;
+
+                if (!isValid)
+                {
+                    Console.WriteLine($"Please enter number between 1 - 3");
+                }
+            }
+            while (!isValid);
+
+            difficulty = (Difficulty)index - 1;
+        }
+
+        private static bool Confirm(string title)
+        {
+            ConsoleKey response;
+            do
+            {
+                Console.Write($"{title} [y/n] ");
+                response = Console.ReadKey(false).Key;
+
+                if(response != ConsoleKey.Y && response != ConsoleKey.N)
+                {
+                    Console.WriteLine("\nPlease enter Y for yes or N for no");
+                }
+            } while (response != ConsoleKey.Y && response != ConsoleKey.N);
+
+            return response == ConsoleKey.Y;
         }
 
         private static async Task Play()
         {
-            do
+            State state = State.None;
+            while (state == State.None)
             {
-                
-                Board();
-                if (player % 2 == 0)
-                {
-                    bool isOk = false;
-                    do
-                    {
-                        choice = await Client.RequestNextMove();
+                PrintBoard();
 
-                        isOk = list[choice] != 'X' && list[choice] != 'O';
-                    } while (!isOk);
-
-                }
-                else
+                if (board.WhosTurn() == Player.You)
                 {
-                    int number;
                     bool isValid;
-                    if (player > 1)
-                    {
-                        Console.WriteLine($"Your opponent's previous move: {choice}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Enter number between 1 and 9: ");
-                    }
-
                     do
                     {
                         Console.Write("Your move: ");
+                        isValid = int.TryParse(Console.ReadLine(), out int index) &&
+                            index > 0 && index <= size * size && board.MakeMove(index);
 
-                        isValid = int.TryParse(Console.ReadLine(), out number) && number > 0 && number < 10;
-
-                        if (isValid)
+                        if (!isValid)
                         {
-                            Console.WriteLine("Please enter the correct number");
+                            Console.WriteLine($"Please enter number between 1 - {size * size}");
                         }
                     }
                     while (!isValid);
-
-                    choice = number;
-                }
-
-                if (list[choice] != 'X' && list[choice] != 'O')
-                {
-                    if (player % 2 == 0) 
-                    {
-                        list[choice] = 'O';
-                        player++;
-                    }
-                    else
-                    {
-                        list[choice] = 'X';
-                        player++;
-                    }
                 }
                 else
                 {
-                    Console.WriteLine($"Sorry the row {choice} is already marked with {list[choice]}");
-                    Console.WriteLine("\n");
-                    Console.WriteLine("Please press any key to try again.....");
-                    Console.ReadKey();
+                    bool isValid;
+                    string message = ResponseFactory();
+
+                    do
+                    {
+                        isValid = board.MakeMove(await Client.RequestNextMove(message));
+                    } while (!isValid);
                 }
-                flag = CheckWin();// calling of check win
+
+                state = board.GetState();
             }
-            while (flag != 1 && flag != -1);
+
+            PrintBoard();
+
+            ShowResult(board.GetWinner().ToString(), state);
+        }
+
+        private static void PrintBoard()
+        {
             Console.Clear();
-            Board();
-            if (flag == 1)
+            Console.WriteLine($"{difficulty}\nYou:X and Server:O");
+            board.Print();
+        }
+
+        private static string ResponseFactory()
+        {
+            string message;
+            if (difficulty == Difficulty.Normal)
             {
-                string playerName = (player % 2 == 0) ? "You" : "Server";
+                message = JsonSerializer.Serialize(board.ToList());
+            }
+            else if (difficulty == Difficulty.Hard)
+            {
+                message = JsonSerializer.Serialize(board);
+            }
+            else
+            {
+                message = string.Empty;
+            }
+
+            return message;
+        }
+
+        private static void ShowResult(string playerName, State state)
+        {
+            if (state == State.Winner)
+            {
                 Console.WriteLine($"{playerName} won");
             }
-            else
+            else if (state == State.Draw)
             {
                 Console.WriteLine("Draw");
-            }
-            Console.ReadLine();
-        }
-
-        private static void Board()
-        {
-            Console.Clear();
-            string print = "You:X and Server:O";
-            print += "\n";
-            print += "     |     |      ";
-            print += "\n";
-            print += $"  {list[1]}  |  {list[2]}  |  {list[3]}";
-            print += "\n";
-            print += "_____|_____|_____ ";
-            print += "\n";
-            print += $"  {list[4]}  |  {list[5]}  |  {list[6]}";
-            print += "\n";
-            print += "_____|_____|_____ ";
-            print += "\n";
-            print += $"  {list[7]}  |  {list[8]}  |  {list[9]}";
-            print += "\n";
-            print += "     |     |      ";
-
-            Console.WriteLine(print);
-        }
-
-        private static int CheckWin()
-        {
-            #region Horzontal Winning Condtion
-            //Winning Condition For First Row
-            if (list[1] == list[2] && list[2] == list[3])
-            {
-                return 1;
-            }
-            //Winning Condition For Second Row
-            else if (list[4] == list[5] && list[5] == list[6])
-            {
-                return 1;
-            }
-            //Winning Condition For Third Row
-            else if (list[6] == list[7] && list[7] == list[8])
-            {
-                return 1;
-            }
-            #endregion
-            #region vertical Winning Condtion
-            //Winning Condition For First Column
-            else if (list[1] == list[4] && list[4] == list[7])
-            {
-                return 1;
-            }
-            //Winning Condition For Second Column
-            else if (list[2] == list[5] && list[5] == list[8])
-            {
-                return 1;
-            }
-            //Winning Condition For Third Column
-            else if (list[3] == list[6] && list[6] == list[9])
-            {
-                return 1;
-            }
-            #endregion
-            #region Diagonal Winning Condition
-            else if (list[1] == list[5] && list[5] == list[9])
-            {
-                return 1;
-            }
-            else if (list[3] == list[5] && list[5] == list[7])
-            {
-                return 1;
-            }
-            #endregion
-            #region Checking For Draw
-            // If all the cells or values filled with X or O then any player has won the match
-            else if (list[1] != '1' && list[2] != '2' && list[3] != '3' && list[4] != '4' && list[5] != '5' && list[6] != '6' && list[7] != '7' && list[8] != '8' && list[9] != '9')
-            {
-                return -1;
-            }
-            #endregion
-            else
-            {
-                return 0;
             }
         }
     }
